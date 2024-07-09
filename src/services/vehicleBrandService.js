@@ -10,23 +10,25 @@ export class VehicleBrandService {
         };
       }
       const skip = (page - 1) * pageSize;
-      const data = await prisma.vehicle_brand.findMany({
-        skip,
-        take: pageSize,
-        where: whereClause,
-        orderBy: {
-          name: "asc",
-        },
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-      const vbCount = await prisma.vehicle_brand.count({
-        where: whereClause,
-      });
+      const [data, vbCount] = await Promise.all([
+        prisma.vehicle_brand.findMany({
+          skip,
+          take: pageSize,
+          where: whereClause,
+          orderBy: {
+            name: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        prisma.vehicle_brand.count({
+          where: whereClause,
+        }),
+      ]);
       const totalPage = Math.ceil(vbCount / pageSize);
       return {
         data,
@@ -73,15 +75,22 @@ export class VehicleBrandService {
       throw new Error(`name is required`);
     }
     try {
-      await prisma.$transaction([
-        prisma.vehicle_brand.create({
-          data: {
-            name: name,
-          },
-        }),
-      ]);
+      const data = await prisma.vehicle_brand.findFirst({
+        where: {
+          name: name,
+        },
+      });
+      if (data) {
+        throw new Error(`${name} brand already exists`);
+      }
+      await prisma.vehicle_brand.create({
+        data: {
+          name: name,
+        },
+      });
       return `create success`;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -89,31 +98,31 @@ export class VehicleBrandService {
   async update(id, name) {
     const isId = Number(id);
     if (isNaN(isId) || !Number.isInteger(isId)) {
-      throw new Error(`id must be a valid integer`);
+      throw new Error("id must be a valid integer");
     }
     if (!name) {
-      throw new Error(`name is required`);
+      throw new Error("name is required");
     }
+
     try {
-      const data = await prisma.vehicle_brand.findUnique({
-        where: {
-          id: isId,
-        },
-      });
+      const [data, checkName] = await Promise.all([
+        prisma.vehicle_brand.findUnique({ where: { id: isId } }),
+        prisma.vehicle_brand.findFirst({ where: { name } }),
+      ]);
+
       if (!data) {
         throw new Error(`id ${isId} not found`);
       }
-      await prisma.$transaction([
-        prisma.vehicle_brand.update({
-          where: {
-            id: isId,
-          },
-          data: {
-            name: name,
-          },
-        }),
-      ]);
-      return `update success`;
+      if (checkName) {
+        throw new Error(`${name} brand already exists`);
+      }
+
+      await prisma.vehicle_brand.update({
+        where: { id: isId },
+        data: { name },
+      });
+
+      return "update success";
     } catch (error) {
       throw error;
     }
@@ -133,13 +142,11 @@ export class VehicleBrandService {
       if (!data) {
         throw new Error(`id ${isId} not found`);
       }
-      await prisma.$transaction([
-        prisma.vehicle_brand.delete({
-          where: {
-            id: isId,
-          },
-        }),
-      ]);
+      await prisma.vehicle_model.delete({
+        where: {
+          id: isId,
+        },
+      });
       return `delete success`;
     } catch (error) {
       throw error;

@@ -13,31 +13,34 @@ export class VehicleTypeService {
         };
       }
       const skip = (page - 1) * pageSize;
-      const data = await prisma.vehicle_type.findMany({
-        skip,
-        take: pageSize,
-        where: whereClause,
-        orderBy: {
-          name: "asc",
-        },
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          v_brand: {
-            select: {
-              id: true,
-              name: true,
-              createdAt: true,
-              updatedAt: true,
+      const [data, vtCount] = await Promise.all([
+        prisma.vehicle_type.findMany({
+          skip,
+          take: pageSize,
+          where: whereClause,
+          orderBy: {
+            name: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+            v_brand: {
+              select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                updatedAt: true,
+              },
             },
           },
-        },
-      });
-      const vtCount = await prisma.vehicle_type.count({
-        where: whereClause,
-      });
+        }),
+        prisma.vehicle_type.count({
+          where: whereClause,
+        }),
+      ]);
+
       const totalPage = Math.ceil(vtCount / pageSize);
       return {
         data,
@@ -101,14 +104,12 @@ export class VehicleTypeService {
       }
     });
     try {
-      await prisma.$transaction([
-        prisma.vehicle_type.create({
-          data: {
-            name: name,
-            brand_id: vb_id,
-          },
-        }),
-      ]);
+      prisma.vehicle_type.create({
+        data: {
+          name: name,
+          brand_id: vb_id,
+        },
+      });
       return "created";
     } catch (error) {
       console.log(error);
@@ -140,17 +141,15 @@ export class VehicleTypeService {
       if (!data) {
         throw new Error(`id ${isId} not found`);
       } else {
-        await prisma.$transaction([
-          prisma.vehicle_type.update({
-            where: {
-              id: isId,
-            },
-            data: {
-              name: name,
-              brand_id: vb_id,
-            },
-          }),
-        ]);
+        prisma.vehicle_type.update({
+          where: {
+            id: isId,
+          },
+          data: {
+            name: name,
+            brand_id: vb_id,
+          },
+        });
         return `update success`;
       }
     } catch (error) {}
@@ -170,13 +169,11 @@ export class VehicleTypeService {
       if (!data) {
         throw new Error(`id ${isId} not found`);
       } else {
-        await prisma.$transaction([
-          prisma.vehicle_type.delete({
-            where: {
-              id: isId,
-            },
-          }),
-        ]);
+        prisma.vehicle_type.delete({
+          where: {
+            id: isId,
+          },
+        });
         return `Deleted`;
       }
     } catch (error) {

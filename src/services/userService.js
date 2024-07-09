@@ -10,25 +10,28 @@ class UserService {
         };
       }
       const skip = (page - 1) * pageSize;
-      const data = await prisma.user.findMany({
-        skip,
-        take: pageSize,
-        where: whereClause,
-        orderBy: {
-          name: "asc",
-        },
-        select: {
-          id: true,
-          name: true,
-          is_admin: true,
-          email: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-      const userCount = await prisma.user.count({
-        where: whereClause,
-      });
+      const [data, userCount] = await Promise.all([
+        await prisma.user.findMany({
+          skip,
+          take: pageSize,
+          where: whereClause,
+          orderBy: {
+            name: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+            is_admin: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        prisma.user.count({
+          where: whereClause,
+        }),
+      ]);
+
       const totalPage = Math.ceil(userCount / pageSize);
       return {
         data,
@@ -83,15 +86,13 @@ class UserService {
       if (data) {
         throw new Error("email already registered");
       }
-      await prisma.$transaction([
-        prisma.user.create({
-          data: {
-            name: name,
-            email: email,
-            password: hashPassword,
-          },
-        }),
-      ]);
+      await prisma.user.create({
+        data: {
+          name: name,
+          email: email,
+          password: hashPassword,
+        },
+      });
       return `success create new user`;
     } catch (error) {
       console.log(error);
@@ -121,31 +122,27 @@ class UserService {
         throw new Error(`user id ${id} not found`);
       }
       if (!password) {
-        await prisma.$transaction([
-          prisma.user.update({
-            where: {
-              id: user["id"],
-            },
-            data: {
-              name: name,
-              email: email,
-            },
-          }),
-        ]);
+        await prisma.user.update({
+          where: {
+            id: user["id"],
+          },
+          data: {
+            name: name,
+            email: email,
+          },
+        });
         return `update user success`;
       } else {
-        await prisma.$transaction([
-          prisma.user.update({
-            where: {
-              id: user["id"],
-            },
-            data: {
-              name: name,
-              email: email,
-              password: hash,
-            },
-          }),
-        ]);
+        prisma.user.update({
+          where: {
+            id: user["id"],
+          },
+          data: {
+            name: name,
+            email: email,
+            password: hash,
+          },
+        });
         return `update user success`;
       }
     } catch (error) {
@@ -167,13 +164,11 @@ class UserService {
       if (!data) {
         throw new Error(`user id ${isId} not found`);
       }
-      await prisma.$transaction([
-        prisma.user.delete({
-          where: {
-            id: isId,
-          },
-        }),
-      ]);
+      await prisma.user.delete({
+        where: {
+          id: isId,
+        },
+      });
       return `delete success`;
     } catch (error) {
       console.log(error);

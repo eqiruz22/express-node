@@ -1,15 +1,14 @@
 import { ResponseJson } from "../helpers/response.js";
-import { VehicleBrandService } from "../services/vehicleBrandService.js";
+import YearService from "../services/yearService.js";
 
-const vehicle = new VehicleBrandService();
-
-export const GetAll = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const size = parseInt(req.query.size) || 10;
-  const search = req.query.search || "";
+const ys = new YearService();
+export const GetAllYear = async (req, res) => {
   try {
-    const data = await vehicle.getAll(page, size, search);
-    return ResponseJson(res, 200, "show all data", data);
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.size) || 10;
+    const search = req.query.query || "";
+    const data = await ys.getAll(page, pageSize, search);
+    return ResponseJson(res, 200, "show all data user", data);
   } catch (error) {
     return ResponseJson(res, 500, "Internal server error", error);
   }
@@ -18,7 +17,7 @@ export const GetAll = async (req, res) => {
 export const GetId = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await vehicle.getId(id);
+    const data = await ys.getId(id);
     return ResponseJson(res, 200, "show user by id", data);
   } catch (error) {
     if (error.message.includes("not found")) {
@@ -31,36 +30,32 @@ export const GetId = async (req, res) => {
   }
 };
 
-export const CreateVBrand = async (req, res) => {
-  const { name } = req.body;
+export const CreateYear = async (req, res) => {
+  const { year } = req.body;
   try {
-    const data = await vehicle.create(name);
-    return ResponseJson(res, 201, "Created", data);
+    const data = await ys.create(year);
+    return ResponseJson(res, 200, "Created", data);
   } catch (error) {
-    if (error.message.includes("already exists")) {
-      return ResponseJson(res, 400, "request is not valid", error.message);
-    }
     if (error.message.includes("is required")) {
-      return ResponseJson(res, 404, "request is not valid", error.message);
+      return ResponseJson(res, 400, "request is not valid", error.message);
     }
     return ResponseJson(res, 500, "Internal server error", error);
   }
 };
 
-export const UpdateVBrand = async (req, res) => {
+export const UpdateYear = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { year } = req.body;
   try {
-    const data = await vehicle.update(id, name);
-    return ResponseJson(res, 200, "updated", data);
+    const data = await ys.update(id, year);
+    return ResponseJson(res, 200, "Updated", data);
   } catch (error) {
     if (error.message.includes("not found")) {
       return ResponseJson(res, 404, "not found", error.message);
     }
     if (
       error.message.includes("valid integer") ||
-      error.message.includes("is required") ||
-      error.message.includes("already exists")
+      error.message.includes("is required")
     ) {
       return ResponseJson(res, 400, "request is not valid", error.message);
     }
@@ -68,10 +63,10 @@ export const UpdateVBrand = async (req, res) => {
   }
 };
 
-export const DeleteVBrand = async (req, res) => {
+export const DeleteYear = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await vehicle.destroy(id);
+    const data = await ys.destroy(id);
     return ResponseJson(res, 200, "Deleted", data);
   } catch (error) {
     if (error.message.includes("not found")) {

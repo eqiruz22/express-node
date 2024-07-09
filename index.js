@@ -3,6 +3,7 @@ import UserRoute from "./src/routes/routeUser.js";
 import RouteVBrand from "./src/routes/routeVBrand.js";
 import RouteVType from "./src/routes/routeVType.js";
 import RouteVModel from "./src/routes/routeVModel.js";
+import RouteYear from "./src/routes/routeYear.js";
 import cors from "cors";
 const app = express();
 const port = 5000;
@@ -13,6 +14,7 @@ app.use(UserRoute);
 app.use(RouteVBrand);
 app.use(RouteVType);
 app.use(RouteVModel);
+app.use(RouteYear);
 
 app.get("*", (req, res) => {
   return res.status(404).json({

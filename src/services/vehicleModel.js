@@ -10,32 +10,34 @@ export class VehicleModelService {
         };
       }
       const skip = (page - 1) * pageSize;
-      const data = await prisma.vehicle_model.findMany({
-        skip,
-        take: pageSize,
-        where: whereClause,
-        orderBy: {
-          name: "asc",
-        },
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-          v_type: {
-            select: {
-              id: true,
-              name: true,
-              createdAt: true,
-              updatedAt: true,
+      const [data, vmCount] = await Promise.all([
+        prisma.vehicle_model.findMany({
+          skip,
+          take: pageSize,
+          where: whereClause,
+          orderBy: {
+            name: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+            v_type: {
+              select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                updatedAt: true,
+              },
             },
           },
-        },
-      });
+        }),
+        prisma.vehicle_model.count({
+          where: whereClause,
+        }),
+      ]);
 
-      const vmCount = await prisma.vehicle_model.count({
-        where: whereClause,
-      });
       const totalPage = Math.ceil(vmCount / pageSize);
       return {
         data,
@@ -98,14 +100,12 @@ export class VehicleModelService {
       }
     });
     try {
-      await prisma.$transaction([
-        prisma.vehicle_model.create({
-          data: {
-            name: name,
-            v_type: vt_id,
-          },
-        }),
-      ]);
+      await prisma.vehicle_model.create({
+        data: {
+          name: name,
+          v_type: vt_id,
+        },
+      });
       return `success created`;
     } catch (error) {
       throw error;
@@ -138,17 +138,15 @@ export class VehicleModelService {
       if (!data) {
         throw new Error(`id ${isId} not found`);
       }
-      await prisma.$transaction([
-        prisma.vehicle_model.update({
-          where: {
-            id: isId,
-          },
-          data: {
-            name: name,
-            v_type: vt_id,
-          },
-        }),
-      ]);
+      await prisma.vehicle_model.update({
+        where: {
+          id: isId,
+        },
+        data: {
+          name: name,
+          v_type: vt_id,
+        },
+      });
       return "update success";
     } catch (error) {
       throw error;
@@ -169,13 +167,11 @@ export class VehicleModelService {
       if (!data) {
         throw new Error(`id ${isId} not found`);
       }
-      await prisma.$transaction([
-        prisma.vehicle_model.delete({
-          where: {
-            id: isId,
-          },
-        }),
-      ]);
+      await prisma.vehicle_model.delete({
+        where: {
+          id: isId,
+        },
+      });
       return "delete success";
     } catch (error) {
       throw error;
