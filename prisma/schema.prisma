@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  is_admin  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle_brand {
+  id        Int            @id @default(autoincrement())
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  Type      Vehicle_type[]
+}
+
+model Vehicle_type {
+  id        Int             @id @default(autoincrement())
+  name      String
+  v_brand   Vehicle_brand   @relation(fields: [brand_id], references: [id])
+  brand_id  Int
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  VModel    Vehicle_model[]
+}
+
+model Vehicle_model {
+  id        Int          @id @default(autoincrement())
+  name      String
+  v_type    Vehicle_type @relation(fields: [type_id], references: [id])
+  type_id   Int
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Pricelist Pricelist[]
+}
+
+model Vehicle_year {
+  id        Int         @id @default(autoincrement())
+  year      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Pricelist Pricelist[]
+}
+
+model Pricelist {
+  id       Int           @id @default(autoincrement())
+  code     String
+  price    String
+  v_year   Vehicle_year  @relation(fields: [year_id], references: [id])
+  year_id  Int
+  v_model  Vehicle_model @relation(fields: [model_id], references: [id])
+  model_id Int
+}
