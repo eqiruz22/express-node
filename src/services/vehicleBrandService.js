@@ -105,21 +105,16 @@ export class VehicleBrandService {
     }
 
     try {
-      const [data, checkName] = await Promise.all([
-        prisma.vehicle_brand.findUnique({ where: { id: isId } }),
-        prisma.vehicle_brand.findFirst({ where: { name } }),
-      ]);
-
+      const data = await prisma.vehicle_brand.findUnique({
+        where: { id: isId },
+      });
       if (!data) {
         throw new Error(`id ${isId} not found`);
-      }
-      if (checkName) {
-        throw new Error(`${name} brand already exists`);
       }
 
       await prisma.vehicle_brand.update({
         where: { id: isId },
-        data: { name },
+        data: { name: name },
       });
 
       return "update success";

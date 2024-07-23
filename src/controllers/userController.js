@@ -6,7 +6,7 @@ export const getAllUser = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.size) || 10;
-    const search = req.query.query || "";
+    const search = req.query.search || "";
     const data = await users.getAll(page, pageSize, search);
     return ResponseJson(res, 200, "show all data user", data);
   } catch (error) {
@@ -34,8 +34,9 @@ export const getUserId = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const data = await users.createUser(name, email, password);
+    const { name, email, password, is_admin } = req.body;
+    const data = await users.createUser(name, email, password, is_admin);
+    console.log(data);
     return ResponseJson(res, 201, "success create user", data);
   } catch (error) {
     if (
@@ -49,10 +50,10 @@ export const createUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, is_admin } = req.body;
   const { id } = req.params;
   try {
-    const data = await users.update(id, name, email, password);
+    const data = await users.update(id, name, email, password, is_admin);
     return ResponseJson(res, 200, "update success", data);
   } catch (error) {
     if (

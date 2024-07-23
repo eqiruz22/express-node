@@ -11,7 +11,7 @@ class UserService {
       }
       const skip = (page - 1) * pageSize;
       const [data, userCount] = await Promise.all([
-        await prisma.user.findMany({
+        prisma.user.findMany({
           skip,
           take: pageSize,
           where: whereClause,
@@ -68,7 +68,7 @@ class UserService {
     }
   }
 
-  async createUser(name, email, password) {
+  async createUser(name, email, password, is_admin) {
     const hashPassword = await bcrypt.hash(password, 10);
     const requireField = ["name", "email", "password"];
 
@@ -91,6 +91,7 @@ class UserService {
           name: name,
           email: email,
           password: hashPassword,
+          is_admin: is_admin,
         },
       });
       return `success create new user`;
@@ -100,9 +101,9 @@ class UserService {
     }
   }
 
-  async update(id, name, email, password) {
+  async update(id, name, email, password, is_admin) {
     const isId = Number(id);
-    const requireField = ["name", "email"];
+    const requireField = ["name", "email", "is_admin"];
     const hash = await bcrypt.hash(password, 10);
     if (isNaN(isId) || !Number.isInteger(isId)) {
       throw new Error("user id must be a valid integer");
@@ -129,6 +130,7 @@ class UserService {
           data: {
             name: name,
             email: email,
+            is_admin: is_admin,
           },
         });
         return `update user success`;
@@ -141,6 +143,7 @@ class UserService {
             name: name,
             email: email,
             password: hash,
+            is_admin: is_admin,
           },
         });
         return `update user success`;

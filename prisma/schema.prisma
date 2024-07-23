@@ -25,7 +25,7 @@ model User {
 
 model Vehicle_brand {
   id        Int            @id @default(autoincrement())
-  name      String
+  name      String         @unique
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   Type      Vehicle_type[]
@@ -33,7 +33,7 @@ model Vehicle_brand {
 
 model Vehicle_type {
   id        Int             @id @default(autoincrement())
-  name      String
+  name      String          @unique
   v_brand   Vehicle_brand   @relation(fields: [brand_id], references: [id])
   brand_id  Int
   createdAt DateTime        @default(now())
@@ -43,7 +43,7 @@ model Vehicle_type {
 
 model Vehicle_model {
   id        Int          @id @default(autoincrement())
-  name      String
+  name      String       @unique
   v_type    Vehicle_type @relation(fields: [type_id], references: [id])
   type_id   Int
   createdAt DateTime     @default(now())
@@ -60,11 +60,13 @@ model Vehicle_year {
 }
 
 model Pricelist {
-  id       Int           @id @default(autoincrement())
-  code     String
-  price    String
-  v_year   Vehicle_year  @relation(fields: [year_id], references: [id])
-  year_id  Int
-  v_model  Vehicle_model @relation(fields: [model_id], references: [id])
-  model_id Int
+  id        Int           @id @default(autoincrement())
+  code      String        @unique
+  price     String
+  v_year    Vehicle_year  @relation(fields: [year_id], references: [id])
+  year_id   Int
+  v_model   Vehicle_model @relation(fields: [model_id], references: [id])
+  model_id  Int
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
